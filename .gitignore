@@ -1,0 +1,40 @@
+# Environmental variables / Secrets (CRITICAL)
+.env
+.env.local
+*.env
+.env.*
+
+# IDE and Editor configs
+.idea/
+.vscode/
+*.iml
+*.iws
+*.ipr
+.classpath
+.project
+.settings/
+.factorypath
+
+# Maven / Build outputs
+target/
+**/target/
+*.jar
+*.war
+*.ear
+.mvn/
+
+# Node / Angular (For future UI modules)
+node_modules/
+**/node_modules/
+.angular/
+dist/
+**/dist/
+
+# OS specific files
+Thumbs.db
+.DS_Store
+
+# Log files
+*.log
+logs/
+**/logs/

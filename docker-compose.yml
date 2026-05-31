@@ -1,0 +1,129 @@
+services:
+  # ========================
+  # DATA STORES
+  # ========================
+  postgres:
+    image: postgres:16-alpine
+    container_name: codepilot-postgres
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_AUTH_DB}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
+    networks:
+      - codepilot-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  mongodb:
+    image: mongo:7
+    container_name: codepilot-mongodb
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
+      MONGO_INITDB_DATABASE: ${MONGO_DB}
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - codepilot-network
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: codepilot-redis
+    command: redis-server --requirepass ${REDIS_PASSWORD}
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - codepilot-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ========================
+  # BACKEND SERVICES
+  # ========================
+  auth-service:
+    build:
+      context: ./auth-service
+      dockerfile: Dockerfile
+    container_name: codepilot-auth
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_AUTH_DB}
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRATION_MS: ${JWT_EXPIRATION_MS}
+      JWT_REFRESH_EXPIRATION_MS: ${JWT_REFRESH_EXPIRATION_MS}
+    ports:
+      - "${AUTH_SERVICE_PORT}:8081"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - codepilot-network
+
+#  project-service:
+#    build:
+#      context: ./project-service
+#      dockerfile: Dockerfile
+#    container_name: codepilot-project
+#    environment:
+#      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_PROJECT_DB}
+#      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
+#      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
+#      JWT_SECRET: ${JWT_SECRET}
+#    ports:
+#      - "${PROJECT_SERVICE_PORT}:8082"
+#    depends_on:
+#      postgres:
+#        condition: service_healthy
+#    networks:
+#      - codepilot-network
+#
+#  api-gateway:
+#    build:
+#      context: ./api-gateway-service
+#      dockerfile: Dockerfile
+#    container_name: codepilot-gateway
+#    environment:
+#      AUTH_SERVICE_URL: http://auth-service:8081
+#      PROJECT_SERVICE_URL: http://project-service:8082
+#      JWT_SECRET: ${JWT_SECRET}
+#      REDIS_HOST: redis
+#      REDIS_PORT: 6379
+#      REDIS_PASSWORD: ${REDIS_PASSWORD}
+#    ports:
+#      - "${GATEWAY_PORT}:8080"
+#    depends_on:
+#      - auth-service
+#      - project-service
+#      - redis
+#    networks:
+#      - codepilot-network
+
+volumes:
+  postgres_data:
+  mongo_data:
+  redis_data:
+
+networks:
+  codepilot-network:
+    driver: bridge
