@@ -1,0 +1,51 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: api-gateway-service
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+  cloud:
+    gateway:
+      routes:
+        # Auth Service Route (Public Endpoint)
+        - id: auth-service
+          uri: http://${AUTH_SERVICE_HOST:localhost}:${AUTH_SERVICE_PORT:8081}
+          predicates:
+            - Path=/api/auth/**
+
+        # Project Service Route (Protected Endpoint)
+        - id: project-service
+          uri: http://${PROJECT_SERVICE_HOST:localhost}:${PROJECT_SERVICE_PORT:8082}
+          predicates:
+            - Path=/api/projects/**, /api/tasks/**
+          filters:
+            - name: JwtAuthenticationFilter
+            - name: RequestRateLimiter
+              args:
+                redis-rate-limiter.replenishRate: 10
+                redis-rate-limiter.burstCapacity: 20
+                key-resolver: "#{@userKeyResolver}"
+
+        # AI Orchestrator Service Route (Protected Endpoint)
+        - id: ai-orchestrator-service
+          uri: http://${AI_ORCHESTRATOR_HOST:localhost}:${AI_ORCHESTRATOR_PORT:8090}
+          predicates:
+            - Path=/api/ai/**
+          filters:
+            - name: JwtAuthenticationFilter
+
+        # Vector Memory Service Route (Protected Endpoint)
+        - id: vector-memory-service
+          uri: http://${VECTOR_MEMORY_HOST:localhost}:${VECTOR_MEMORY_PORT:8091}
+          predicates:
+            - Path=/api/search/**
+          filters:
+            - name: JwtAuthenticationFilter
+
+app:
+  jwt:
+    secret: ${JWT_SECRET:407f349c25227d84b25dfc5b2a09c2538165b40b08a906cf6a928e46cf24ffc9}
