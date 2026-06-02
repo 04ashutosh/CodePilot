@@ -24,7 +24,7 @@
     <!-- ===== Modules ===== -->
     <modules>
         <module>auth-service</module>
-<!--        <module>project-service</module>-->
+        <module>project-service</module>
         <module>api-gateway-service</module>
     </modules>
 
