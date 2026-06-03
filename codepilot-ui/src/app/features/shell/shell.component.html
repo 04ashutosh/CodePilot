@@ -1,0 +1,59 @@
+<div class="shell-layout" [class.collapsed]="isSidebarCollapsed">
+  <!-- Sidebar -->
+  <aside class="sidebar glass-panel">
+    <div class="sidebar-header">
+      <div class="brand">
+        <span class="brand-logo">🚀</span>
+        <span class="brand-name" *ngIf="!isSidebarCollapsed">CodePilot</span>
+      </div>
+      <button class="toggle-btn" (click)="toggleSidebar()">
+        {{ isSidebarCollapsed ? '→' : '←' }}
+      </button>
+    </div>
+
+    <nav class="sidebar-menu">
+      <a class="menu-item" routerLink="/dashboard" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
+        <span class="menu-icon">📊</span>
+        <span class="menu-text" *ngIf="!isSidebarCollapsed">Dashboard</span>
+      </a>
+      
+      <!-- Placeholder items for future functionality -->
+      <a class="menu-item disabled">
+        <span class="menu-icon">📁</span>
+        <span class="menu-text" *ngIf="!isSidebarCollapsed">Repositories</span>
+      </a>
+      <a class="menu-item disabled">
+        <span class="menu-icon">⚙️</span>
+        <span class="menu-text" *ngIf="!isSidebarCollapsed">Settings</span>
+      </a>
+    </nav>
+
+    <div class="sidebar-footer" *ngIf="user$ | async as user">
+      <div class="user-info" *ngIf="!isSidebarCollapsed">
+        <div class="avatar" *ngIf="user.avatar_url; else defaultAvatar">
+          <img [src]="user.avatar_url" alt="Avatar"/>
+        </div>
+        <ng-template #defaultAvatar>
+          <div class="avatar default">
+            {{ user.username.substring(0, 2).toUpperCase() }}
+          </div>
+        </ng-template>
+        <div class="details">
+          <div class="name">{{ user.full_name || user.username }}</div>
+          <div class="role">{{ user.role }}</div>
+        </div>
+      </div>
+      <button class="logout-btn" (click)="logout()" [title]="isSidebarCollapsed ? 'Logout' : ''">
+        <span class="logout-icon">↩</span>
+        <span class="logout-text" *ngIf="!isSidebarCollapsed">Logout</span>
+      </button>
+    </div>
+  </aside>
+
+  <!-- Main Content Panel -->
+  <div class="main-container">
+    <main class="content-wrapper">
+      <router-outlet></router-outlet>
+    </main>
+  </div>
+</div>

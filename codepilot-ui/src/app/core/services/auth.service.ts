@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable, tap } from 'rxjs';
-import { AuthResponse, User } from '../models/user.model';
+import { AuthResponse, User, Workspace } from '../models/user.model';
 
 @Injectable({
   providedIn: 'root'
@@ -42,6 +42,10 @@ export class AuthService {
       password,
       fullName
     });
+  }
+
+  public getWorkspaces(): Observable<Workspace[]> {
+    return this.http.get<Workspace[]>(`${this.API_URL}/workspaces`);
   }
 
   public login(usernameOrEmail: string, password: string): Observable<AuthResponse> {

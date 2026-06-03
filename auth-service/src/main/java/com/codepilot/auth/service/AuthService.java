@@ -14,7 +14,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -240,6 +242,21 @@ public class AuthService {
                 .isActive(user.getIsActive())
                 .createdAt(user.getCreatedAt())
                 .build();
+    }
+
+    @Transactional(readOnly = true)
+    public List<WorkspaceDto> getUserWorkspaces(String username) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new AuthException("User not found", HttpStatus.NOT_FOUND));
+
+        return workspaceRepository.findByOwnerId(user.getId()).stream()
+                .map(w -> WorkspaceDto.builder()
+                        .id(w.getId())
+                        .name(w.getName())
+                        .slug(w.getSlug())
+                        .description(w.getDescription())
+                        .build())
+                .collect(Collectors.toList());
     }
 
     private Role determineUserRole(User user) {

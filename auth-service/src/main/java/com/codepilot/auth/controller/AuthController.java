@@ -10,6 +10,8 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
@@ -53,5 +55,11 @@ public class AuthController {
             @Valid @RequestBody UserDto updateDto) {
         UserDto updatedUser = authService.updateProfile(userDetails.getUsername(), updateDto);
         return ResponseEntity.ok(updatedUser);
+    }
+
+    @GetMapping("/workspaces")
+    public ResponseEntity<List<WorkspaceDto>> getWorkspaces(@AuthenticationPrincipal UserDetails userDetails) {
+        List<WorkspaceDto> workspaces = authService.getUserWorkspaces(userDetails.getUsername());
+        return ResponseEntity.ok(workspaces);
     }
 }

@@ -16,3 +16,10 @@ export interface AuthResponse {
   expires_in: number;
   user: User;
 }
+
+export interface Workspace {
+  id: string;
+  name: string;
+  slug: string;
+  description?: string;
+}

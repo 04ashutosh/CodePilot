@@ -1,0 +1,83 @@
+<div class="register-container animate-fade-in">
+  <div class="glass-panel register-card">
+    <div class="logo-header">
+      <div class="logo-icon">✨</div>
+      <h2>Get Started</h2>
+      <p class="subtitle">Create your CodePilot AI account</p>
+    </div>
+
+    <form (ngSubmit)="onSubmit()" #registerForm="ngForm">
+      <div class="error-alert" *ngIf="errorMessage">
+        <span>⚠️</span> {{ errorMessage }}
+      </div>
+
+      <div class="success-alert" *ngIf="successMessage">
+        <span>✅</span> {{ successMessage }}
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="fullName">Full Name</label>
+        <input 
+          class="form-input" 
+          type="text" 
+          id="fullName" 
+          name="fullName" 
+          [(ngModel)]="fullName" 
+          required 
+          placeholder="John Doe"
+        />
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="username">Username</label>
+        <input 
+          class="form-input" 
+          type="text" 
+          id="username" 
+          name="username" 
+          [(ngModel)]="username" 
+          required 
+          placeholder="developer"
+          autocomplete="username"
+        />
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="email">Email Address</label>
+        <input 
+          class="form-input" 
+          type="email" 
+          id="email" 
+          name="email" 
+          [(ngModel)]="email" 
+          required 
+          placeholder="you@domain.com"
+          autocomplete="email"
+        />
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="password">Password</label>
+        <input 
+          class="form-input" 
+          type="password" 
+          id="password" 
+          name="password" 
+          [(ngModel)]="password" 
+          required 
+          placeholder="••••••••"
+          autocomplete="new-password"
+        />
+      </div>
+
+      <button class="btn-primary w-full" type="submit" [disabled]="isLoading">
+        <span *ngIf="isLoading" class="spinner"></span>
+        {{ isLoading ? 'Creating Account...' : 'Sign Up' }}
+      </button>
+    </form>
+
+    <div class="card-footer">
+      Already have an account? <a routerLink="/login">Sign In</a>
+    </div>
+  </div>
+</div>

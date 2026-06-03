@@ -1,0 +1,52 @@
+<div class="login-container animate-fade-in">
+  <div class="glass-panel login-card">
+    <div class="logo-header">
+      <div class="logo-icon">🚀</div>
+      <h2>CodePilot AI</h2>
+      <p class="subtitle">Autonomous AI Software Engineering Platform</p>
+    </div>
+
+    <form (ngSubmit)="onSubmit()" #loginForm="ngForm">
+      <div class="error-alert" *ngIf="errorMessage">
+        <span>⚠️</span> {{ errorMessage }}
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="usernameOrEmail">Username or Email</label>
+        <input 
+          class="form-input" 
+          type="text" 
+          id="usernameOrEmail" 
+          name="usernameOrEmail" 
+          [(ngModel)]="usernameOrEmail" 
+          required 
+          placeholder="Enter username or email"
+          autocomplete="username"
+        />
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="password">Password</label>
+        <input 
+          class="form-input" 
+          type="password" 
+          id="password" 
+          name="password" 
+          [(ngModel)]="password" 
+          required 
+          placeholder="••••••••"
+          autocomplete="current-password"
+        />
+      </div>
+
+      <button class="btn-primary w-full" type="submit" [disabled]="isLoading">
+        <span *ngIf="isLoading" class="spinner"></span>
+        {{ isLoading ? 'Logging in...' : 'Sign In' }}
+      </button>
+    </form>
+
+    <div class="card-footer">
+      Don't have an account? <a routerLink="/register">Create an Account</a>
+    </div>
+  </div>
+</div>
