@@ -1,0 +1,233 @@
+<div class="dashboard-container animate-fade-in">
+  <!-- Top Workspace Header -->
+  <header class="dashboard-header glass-panel">
+    <div class="workspace-selector" *ngIf="activeWorkspace">
+      <span class="label">Workspace:</span>
+      <select [ngModel]="activeWorkspace" (ngModelChange)="selectWorkspace($event)" class="select-input">
+        <option *ngFor="let ws of workspaces" [ngValue]="ws">{{ ws.name }}</option>
+      </select>
+    </div>
+    <div class="actions">
+      <button class="btn-primary" (click)="openProjectModal()">
+        <span>+</span> New Project
+      </button>
+    </div>
+  </header>
+
+  <div class="dashboard-grid">
+    <!-- Projects Sidebar (Left) -->
+    <section class="projects-card glass-panel">
+      <h3 class="section-title">Projects</h3>
+      
+      <div class="loader" *ngIf="isLoadingProjects">
+        <span class="spinner"></span>
+      </div>
+
+      <div class="no-data" *ngIf="!isLoadingProjects && projects.length === 0">
+        No projects found. Create one to get started!
+      </div>
+
+      <div class="projects-list" *ngIf="!isLoadingProjects && projects.length > 0">
+        <div 
+          class="project-item" 
+          *ngFor="let proj of projects" 
+          [class.active]="activeProject?.id === proj.id"
+          (click)="selectProject(proj)"
+        >
+          <div class="project-details">
+            <h4 class="project-name">{{ proj.name }}</h4>
+            <p class="project-desc">{{ proj.description || 'No description provided' }}</p>
+          </div>
+          <span class="arrow">→</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Tasks Middle Section -->
+    <section class="tasks-card glass-panel">
+      <div class="section-header">
+        <h3 class="section-title">Tasks</h3>
+        <button 
+          class="btn-primary btn-sm" 
+          *ngIf="activeProject" 
+          (click)="openTaskModal()"
+        >
+          Submit Task
+        </button>
+      </div>
+
+      <div class="loader" *ngIf="isLoadingTasks">
+        <span class="spinner"></span>
+      </div>
+
+      <div class="no-data" *ngIf="!isLoadingTasks && tasks.length === 0">
+        {{ activeProject ? 'No tasks submitted yet.' : 'Select a project to view tasks.' }}
+      </div>
+
+      <div class="tasks-list" *ngIf="!isLoadingTasks && tasks.length > 0">
+        <div 
+          class="task-item" 
+          *ngFor="let t of tasks" 
+          [class.active]="activeTask?.id === t.id"
+          (click)="selectTask(t)"
+        >
+          <div class="task-info">
+            <h4 class="task-title">{{ t.title }}</h4>
+            <div class="task-meta">
+              <span class="badge" [ngClass]="getStatusClass(t.status)">{{ t.status }}</span>
+              <span class="priority" [ngClass]="getPriorityClass(t.priority)">{{ t.priority }}</span>
+            </div>
+          </div>
+          <span class="arrow">→</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Task Details / Agent Execution Section (Right) -->
+    <section class="details-card glass-panel">
+      <div class="no-data" *ngIf="!activeTask">
+        Select a task to view execution details.
+      </div>
+
+      <div class="task-details-wrapper" *ngIf="activeTask">
+        <div class="details-header">
+          <h2 class="title">{{ activeTask.title }}</h2>
+          <div class="actions">
+            <button 
+              class="btn-danger btn-sm" 
+              *ngIf="activeTask.status === 'PENDING' || activeTask.status === 'PLANNING' || activeTask.status === 'ANALYZING'"
+              (click)="cancelTask(activeTask)"
+            >
+              Cancel Task
+            </button>
+          </div>
+        </div>
+
+        <p class="description">{{ activeTask.description }}</p>
+
+        <div class="status-panel">
+          <div class="panel-item">
+            <span class="label">Status</span>
+            <span class="badge" [ngClass]="getStatusClass(activeTask.status)">{{ activeTask.status }}</span>
+          </div>
+          <div class="panel-item">
+            <span class="label">Priority</span>
+            <span class="priority" [ngClass]="getPriorityClass(activeTask.priority)">{{ activeTask.priority }}</span>
+          </div>
+        </div>
+
+        <!-- AI Agent Execution Progress Timeline -->
+        <div class="execution-progress">
+          <h3 class="subsection-title">AI Execution Steps</h3>
+          
+          <div class="timeline">
+            <!-- Simulated execution timeline for visual demonstration -->
+            <div 
+              class="timeline-item" 
+              *ngFor="let step of simulatedSteps" 
+              [ngClass]="step.status.toLowerCase()"
+            >
+              <div class="timeline-dot"></div>
+              <div class="timeline-content">
+                <div class="step-header">
+                  <h4 class="step-name">{{ step.name }}</h4>
+                  <span class="step-status">{{ step.status }}</span>
+                </div>
+                <p class="step-desc">{{ step.desc }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- Create Project Modal -->
+  <div class="modal-overlay" *ngIf="showNewProjectModal" (click)="closeProjectModal()">
+    <div class="glass-panel modal-card" (click)="$event.stopPropagation()">
+      <h3 class="modal-title">Create New Project</h3>
+      <form (ngSubmit)="createNewProject()">
+        <div class="form-group">
+          <label class="form-label" for="newProjectName">Project Name</label>
+          <input 
+            class="form-input" 
+            type="text" 
+            id="newProjectName" 
+            name="newProjectName" 
+            [(ngModel)]="newProjectName" 
+            required 
+            placeholder="E-commerce Engine"
+          />
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="newProjectDescription">Description</label>
+          <textarea 
+            class="form-input textarea" 
+            id="newProjectDescription" 
+            name="newProjectDescription" 
+            [(ngModel)]="newProjectDescription"
+            placeholder="Explain what the project does..."
+          ></textarea>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn-secondary" (click)="closeProjectModal()">Cancel</button>
+          <button type="submit" class="btn-primary" [disabled]="isSubmittingProject">
+            {{ isSubmittingProject ? 'Creating...' : 'Create Project' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Submit Task Modal -->
+  <div class="modal-overlay" *ngIf="showNewTaskModal" (click)="closeTaskModal()">
+    <div class="glass-panel modal-card" (click)="$event.stopPropagation()">
+      <h3 class="modal-title">Submit Autonomous Task</h3>
+      <form (ngSubmit)="createNewTask()">
+        <div class="form-group">
+          <label class="form-label" for="newTaskTitle">Task Summary</label>
+          <input 
+            class="form-input" 
+            type="text" 
+            id="newTaskTitle" 
+            name="newTaskTitle" 
+            [(ngModel)]="newTaskTitle" 
+            required 
+            placeholder="Add JWT refresh token logic"
+          />
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="newTaskDescription">Detailed Instructions</label>
+          <textarea 
+            class="form-input textarea" 
+            id="newTaskDescription" 
+            name="newTaskDescription" 
+            [(ngModel)]="newTaskDescription"
+            required
+            placeholder="Describe the bug, feature request or edits you want the AI agent to perform in detail..."
+          ></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="newTaskPriority">Priority</label>
+          <select 
+            class="form-input select-input" 
+            id="newTaskPriority" 
+            name="newTaskPriority" 
+            [(ngModel)]="newTaskPriority"
+          >
+            <option value="LOW">Low</option>
+            <option value="MEDIUM">Medium</option>
+            <option value="HIGH">High</option>
+            <option value="CRITICAL">Critical</option>
+          </select>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn-secondary" (click)="closeTaskModal()">Cancel</button>
+          <button type="submit" class="btn-primary" [disabled]="isSubmittingTask">
+            {{ isSubmittingTask ? 'Submitting...' : 'Submit Task' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
