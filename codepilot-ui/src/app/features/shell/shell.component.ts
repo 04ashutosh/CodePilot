@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
@@ -11,10 +11,9 @@ import { AuthService } from '../../core/services/auth.service';
   styleUrls: ['./shell.component.css']
 })
 export class ShellComponent {
+  private authService = inject(AuthService);
   user$ = this.authService.currentUser$;
   isSidebarCollapsed = false;
-
-  constructor(private authService: AuthService) {}
 
   toggleSidebar(): void {
     this.isSidebarCollapsed = !this.isSidebarCollapsed;
@@ -23,4 +22,4 @@ export class ShellComponent {
   logout(): void {
     this.authService.logout();
   }
-}
+}
