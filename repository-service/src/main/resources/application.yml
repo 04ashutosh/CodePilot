@@ -1,0 +1,37 @@
+server:
+  port: 8083
+
+spring:
+  application:
+    name: repository-service
+
+  # ===== MongoDB =====
+  # Connects to the 'codepilot-mongodb' container defined in docker-compose.yml.
+  # The 'codepilot_repo' database was specified via MONGO_INITDB_DATABASE in docker-compose.
+  data:
+    mongodb:
+      uri: mongodb://${MONGO_USER:codepilot}:${MONGO_PASSWORD:mongo_secret_2026}@${MONGO_HOST:localhost}:${MONGO_PORT:27017}/${MONGO_DB:codepilot_repo}?authSource=admin
+
+# ===== JWT =====
+# Must match the same secret used by auth-service and project-service
+# so that tokens issued by auth-service are valid here.
+app:
+  jwt:
+    secret: ${JWT_SECRET:Y29kZXBpbG90LWFpLXN1cGVyLXNlY3JldC1rZXktMjAyNi1wcm9kdWN0aW9uLWdyYWRl}
+  # Base directory on the host where cloned repositories will be stored.
+  # Each repo gets its own subdirectory: {repos-base-path}/{repoId}/
+  repos:
+    base-path: ${REPOS_BASE_PATH:./codepilot-repos}
+
+# ===== Actuator =====
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+
+# ===== Logging =====
+logging:
+  level:
+    com.codepilot.repository: DEBUG
+    org.springframework.data.mongodb: INFO

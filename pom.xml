@@ -26,6 +26,7 @@
         <module>auth-service</module>
         <module>project-service</module>
         <module>api-gateway-service</module>
+        <module>repository-service</module>
     </modules>
 
     <!-- ===== Global Properties ===== -->

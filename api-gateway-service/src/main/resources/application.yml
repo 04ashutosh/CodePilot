@@ -46,6 +46,14 @@ spring:
           filters:
             - name: JwtAuthenticationFilter
 
+        # Repository Service Route (Protected Endpoint)
+        - id: repository-service
+          uri: http://${REPOSITORY_SERVICE_HOST:localhost}:${REPOSITORY_SERVICE_PORT:8083}
+          predicates:
+            - Path=/api/repos/**
+          filters:
+            - name: JwtAuthenticationFilter
+
 app:
   jwt:
     secret: ${JWT_SECRET:407f349c25227d84b25dfc5b2a09c2538165b40b08a906cf6a928e46cf24ffc9}
