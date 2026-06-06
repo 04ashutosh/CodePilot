@@ -26,6 +26,7 @@ public class RepositoryService {
     private final RepositoryDocumentRepository repoRepository;
     private final FileTreeRepository fileTreeRepository;
     private final FileContentRepository fileContentRepository;
+    private final SyncService syncService;
 
     // Injected from application.yml: app.repos.base-path
     @Value("${app.repos.base-path:./codepilot-repos}")
@@ -136,6 +137,26 @@ public class RepositoryService {
         repoRepository.delete(repo);
 
         log.info("Repository '{}' (ID: {}) deleted with all associated data", repo.getName(), id);
+    }
+
+    /**
+     * Triggers an asynchronous sync (clone/pull + index) for a repository.
+     * Returns immediately — the sync runs in a background thread.
+     */
+    public RepositoryResponse triggerSync(String id) {
+        RepositoryDocument repo = findRepoOrThrow(id);
+
+        // Prevent syncing a repo that is already being synced.
+        if ("SYNCING".equals(repo.getSyncStatus())) {
+            throw new IllegalArgumentException("Repository is already syncing");
+        }
+
+        // Fire and forget — sync runs asynchronously.
+        syncService.syncRepository(id);
+
+        // Return the current state (status will be SYNCING).
+        repo.setSyncStatus("SYNCING");
+        return toResponse(repo);
     }
 
     // ========================

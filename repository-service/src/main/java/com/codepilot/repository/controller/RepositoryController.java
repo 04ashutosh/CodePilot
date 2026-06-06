@@ -83,4 +83,12 @@ public class RepositoryController {
         repositoryService.deleteRepository(id);
         return ResponseEntity.noContent().build();
     }
+
+//    This clones the repo (first time) or pulls latest changes (re-sync),
+//    then walks the file tree and indexes all file contents into MongoDB.
+    @PostMapping("/{id}/sync")
+    public ResponseEntity<RepositoryResponse> syncRepository(@PathVariable String id) {
+        RepositoryResponse response = repositoryService.triggerSync(id);
+        return ResponseEntity.accepted().body(response);
+    }
 }
