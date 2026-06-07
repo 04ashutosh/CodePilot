@@ -38,21 +38,31 @@ spring:
           filters:
             - name: JwtAuthenticationFilter
 
-        # Vector Memory Service Route (Protected Endpoint)
+        # Vector Memory Service Route (Protected + Rate Limited)
         - id: vector-memory-service
           uri: http://${VECTOR_MEMORY_HOST:localhost}:${VECTOR_MEMORY_PORT:8091}
           predicates:
             - Path=/api/search/**
           filters:
             - name: JwtAuthenticationFilter
+            - name: RequestRateLimiter
+              args:
+                redis-rate-limiter.replenishRate: 15
+                redis-rate-limiter.burstCapacity: 30
+                key-resolver: "#{@userKeyResolver}"
 
-        # Repository Service Route (Protected Endpoint)
+        # Repository Service Route (Protected + Rate Limited)
         - id: repository-service
           uri: http://${REPOSITORY_SERVICE_HOST:localhost}:${REPOSITORY_SERVICE_PORT:8083}
           predicates:
             - Path=/api/repos/**
           filters:
             - name: JwtAuthenticationFilter
+            - name: RequestRateLimiter
+              args:
+                redis-rate-limiter.replenishRate: 10
+                redis-rate-limiter.burstCapacity: 20
+                key-resolver: "#{@userKeyResolver}"
 
 app:
   jwt:

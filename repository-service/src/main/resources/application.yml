@@ -18,8 +18,8 @@ spring:
 app:
   jwt:
     secret: ${JWT_SECRET:Y29kZXBpbG90LWFpLXN1cGVyLXNlY3JldC1rZXktMjAyNi1wcm9kdWN0aW9uLWdyYWRl}
-  # Base directory on the host where cloned repositories will be stored.
-  # Each repo gets its own subdirectory: {repos-base-path}/{repoId}/
+  internal:
+    api-key: ${INTERNAL_API_KEY:codepilot-internal-key-2026}
   repos:
     base-path: ${REPOS_BASE_PATH:./codepilot-repos}
 

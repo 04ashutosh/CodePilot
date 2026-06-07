@@ -8,6 +8,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.util.List;
 
@@ -20,21 +22,31 @@ public class RepositoryController {
 
     /**
      * POST /api/repos — Register a new repository.
-     * The owner ID is extracted from the JWT by the gateway and forwarded
-     * as the X-User-Username header. In Phase 2.3 (Security), we'll switch
-     * this to extract directly from the JWT in a local filter.
+     * The owner ID is extracted from the JWT-authenticated SecurityContext.
+     * Falls back to X-User-Username header (set by gateway) if needed.
      */
     @PostMapping
     public ResponseEntity<RepositoryResponse> createRepository(
             @Valid @RequestBody CreateRepositoryRequest request,
-            @RequestHeader(value = "X-User-Username", required = false) String username) {
+            @RequestHeader(value = "X-User-Username", required = false) String gatewayUsername) {
 
-        // Use the username as ownerId for now.
-        // Phase 2.3 will replace this with proper JWT-extracted user ID.
-        String ownerId = username != null ? username : "anonymous";
+        // Extract username from the authenticated security context (set by JwtAuthFilter).
+        String ownerId = resolveUsername(gatewayUsername);
 
         RepositoryResponse response = repositoryService.createRepository(request, ownerId);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    /**
+     * Resolves the authenticated username from SecurityContext.
+     * Falls back to gateway header, then "anonymous".
+     */
+    private String resolveUsername(String gatewayUsername) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth != null && auth.isAuthenticated() && !"anonymousUser".equals(auth.getName())) {
+            return auth.getName();
+        }
+        return gatewayUsername != null ? gatewayUsername : "anonymous";
     }
 
     /**

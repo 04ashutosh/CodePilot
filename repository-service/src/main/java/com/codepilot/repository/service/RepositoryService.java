@@ -9,6 +9,7 @@ import com.codepilot.repository.exception.RepositoryOperationException;
 import com.codepilot.repository.repository.RepositoryDocumentRepository;
 import com.codepilot.repository.repository.FileTreeRepository;
 import com.codepilot.repository.repository.FileContentRepository;
+import com.codepilot.repository.security.InputSanitizer;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -42,6 +43,9 @@ public class RepositoryService {
         if (request.getGitUrl() == null && request.getLocalPath() == null) {
             throw new IllegalArgumentException("Either gitUrl or localPath must be provided");
         }
+
+        InputSanitizer.validateGitUrl(request.getGitUrl());
+        InputSanitizer.validateRepoName(request.getName());
 
         // Prevent duplicate registrations of the same Git URL in a project.
         if (request.getGitUrl() != null &&
@@ -109,6 +113,8 @@ public class RepositoryService {
     public FileContentResponse getFileContent(String repositoryId, String filePath) {
         // Verify the repository exists.
         findRepoOrThrow(repositoryId);
+
+        InputSanitizer.validateFilePath(filePath);
 
         FileContentDocument content = fileContentRepository
                 .findByRepositoryIdAndFilePath(repositoryId, filePath)
