@@ -1,0 +1,22 @@
+# ===== Web Framework =====
+fastapi==0.115.6
+uvicorn[standard]==0.34.0
+
+# ===== Vector Database =====
+# Using the full chromadb package (supports numpy 2.x, has Python 3.14 wheels)
+chromadb>=0.6.0
+
+# ===== Embeddings (Phase 2.5 — installed now to avoid re-build) =====
+sentence-transformers>=3.4.0
+
+# ===== JWT Authentication =====
+PyJWT==2.10.1
+
+# ===== HTTP Client (for calling repository-service) =====
+httpx==0.28.1
+
+# ===== Configuration =====
+pydantic-settings==2.7.1
+
+# ===== Logging =====
+python-json-logger==3.2.1

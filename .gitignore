@@ -38,3 +38,14 @@ Thumbs.db
 *.log
 logs/
 **/logs/
+
+
+# ===== Python =====
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+*.egg
+.venv/
+venv/
+env/
