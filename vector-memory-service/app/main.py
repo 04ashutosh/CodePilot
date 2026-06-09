@@ -14,6 +14,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.config import get_settings
 from app.routes import health
+from app.routes import health,indexing,search
 # ===== Logging Configuration =====
 # JSON-structured logging for production observability.
 logging.basicConfig(
@@ -66,9 +67,9 @@ app.add_middleware(
 )
 # ===== Register Routes =====
 app.include_router(health.router, tags=["Health"])
-# Placeholder for Phase 2.5 routes:
-# app.include_router(indexing.router, prefix="/api/search", tags=["Indexing"])
-# app.include_router(search.router, prefix="/api/search", tags=["Search"])
+app.include_router(indexing.router, prefix="/api/search", tags=["Indexing"])
+app.include_router(search.router, prefix="/api/search", tags=["Search"])
+
 # ===== Direct Run Support =====
 # Allows running with: python -m app.main
 if __name__ == "__main__":
