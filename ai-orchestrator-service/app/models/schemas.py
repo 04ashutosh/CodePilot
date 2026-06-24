@@ -41,9 +41,9 @@ class AgentState(TypedDict):
     plan: Optional[str]
     generated_code: Optional[str]
     validation_results: Optional[Dict[str, Any]]
-
-    # Execution Sandbox 
-    execution_results: Optional[Dict[str,Any]]
+    
+    # Execution Sandbox (Phase 4.2)
+    execution_results: Optional[Dict[str, Any]]
     execution_passed: bool
     language: str
     
@@ -51,6 +51,3 @@ class AgentState(TypedDict):
     current_step: str
     errors: List[str]
     iterations: int
-
-
-
