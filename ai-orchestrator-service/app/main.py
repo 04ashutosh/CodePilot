@@ -33,19 +33,25 @@ async def run_ai_workflow(task_data: dict):
         "plan": None,
         "generated_code": None,
         "validation_results": None,
+        "execution_results": None,
+        "execution_passed": False,
+        "language": "python",
         "current_step": "started",
         "errors": [],
         "iterations": 0
     }
     
     try:
-        # Execute the graph asynchronously using .ainvoke
         final_state = await graph_app.ainvoke(initial_state)
         
         logger.info(f"Workflow completed successfully for task: {task_id}")
         logger.info(f"==== FINAL GENERATED CODE ====\n{final_state.get('generated_code')}")
-        
-        # Note: In Phase 4/5, we will publish this result back to Kafka/Project Service.
+        logger.info(f"==== EXECUTION RESULT ====")
+        logger.info(f"  Passed: {final_state.get('execution_passed')}")
+        exec_results = final_state.get('execution_results', {})
+        logger.info(f"  Exit Code: {exec_results.get('exit_code')}")
+        logger.info(f"  Stdout: {exec_results.get('stdout', '')[:300]}")
+        logger.info(f"  Stderr: {exec_results.get('stderr', '')[:300]}")
         
     except Exception as e:
         logger.error(f"Workflow failed for task {task_id}: {e}")
@@ -57,7 +63,6 @@ async def submit_task(request: TaskRequest, background_tasks: BackgroundTasks):
     """
     logger.info(f"Received task submission: {request.task_id}")
     
-    # Prepare initial state data
     task_data = {
         "task_id": request.task_id,
         "repository_id": request.repository_id,
@@ -65,7 +70,6 @@ async def submit_task(request: TaskRequest, background_tasks: BackgroundTasks):
         "description": request.description
     }
     
-    # Trigger background workflow execution
     background_tasks.add_task(run_ai_workflow, task_data)
     
     return TaskResponse(
@@ -76,5 +80,4 @@ async def submit_task(request: TaskRequest, background_tasks: BackgroundTasks):
 
 if __name__ == "__main__":
     import uvicorn
-    # Run the application locally
     uvicorn.run("app.main:app", host="0.0.0.0", port=8090, reload=True)
